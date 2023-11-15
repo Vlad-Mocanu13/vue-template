@@ -1,0 +1,27 @@
+{
+    "db": {
+        "user": "sa",
+        "password": "Kapsch123",
+        "server": "192.168.182.101",
+        "port": 1433,
+        "database": "OrderTracker",
+        "options": {
+            "encrypt": false
+        },
+        "pool": {
+            "max": 100,
+            "min": 5
+        }
+    },
+    "certificates": {
+        "key": "server.key",
+        "cert": "server.crt",
+        "passphrase": "Kapsch123"
+    },
+    "webport": 443,
+    "webporthttp":80,
+    "tlsclientport": 8885,
+    "threadCountTLS": 3, 
+    "threadCountWEB": 6,
+    "uploadThreadStatsInterval": 600000
+}

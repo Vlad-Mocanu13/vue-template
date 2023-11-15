@@ -1,0 +1,13 @@
+
+node_modules/
+.vs/
+*.log
+dist/
+package-lock.json
+livrabil/
+livrabil.zip
+sqlquerysyncdiff.txt
+exported/
+locked/
+temp_reports/
+
