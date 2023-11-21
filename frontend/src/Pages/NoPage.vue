@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import LeftMenu from "@/components/LeftMenu.vue";
+import Menu from "@/components/Menu.vue";
 
 export default defineComponent({
 	name: "NoPage",

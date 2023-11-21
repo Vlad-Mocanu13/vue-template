@@ -174,15 +174,24 @@ function createServer()
         app.use(checkPermissions)
 
         //=================FILES
-        app.get('/',(req, res) =>{             res.send(fs.readFileSync(path.join(__dirname, publicfolder+"/"+(req.auth.auth?'index.html':'index.html')),'utf8'));})
-        app.get('/login.html',(req, res) =>{   res.send(fs.readFileSync(path.join(__dirname, publicfolder+"/"+(req.auth.auth?'index.html':'index.html')),'utf8'));})
-        app.get('/index.html',(req, res) =>{   res.send(fs.readFileSync(path.join(__dirname, publicfolder+"/"+(req.auth.auth?'index.html':'index.html')),'utf8'));})
+        // Catch-all route for Vue.js to handle client-side routing
+
+        const vuePages = ["/login", "/orders", "/orders_personalized", "/users", "/admin", "admin_import", "/admin_deleted", "/audit", "/audit_logs", "/help", "/help_versions", "/help_manual"];
+        vuePages.forEach((page) => {
+          app.get(page, (req, res) => {
+            res.sendFile(path.join(__dirname, publicfolder, 'index.html'));
+          });
+        });
+
+        app.get('/api/',(req, res) =>{             res.send(fs.readFileSync(path.join(__dirname, publicfolder+"/"+(req.auth.auth?'index.html':'index.html')),'utf8'));})
+        app.get('/api/login.html',(req, res) =>{   res.send(fs.readFileSync(path.join(__dirname, publicfolder+"/"+(req.auth.auth?'index.html':'index.html')),'utf8'));})
+        app.get('/api/index.html',(req, res) =>{   res.send(fs.readFileSync(path.join(__dirname, publicfolder+"/"+(req.auth.auth?'index.html':'index.html')),'utf8'));})
         let externalfiles=[{name:"manuals/manual_admin.pdf",type:"application/pdf"},
                            {name:"manuals/manual_users.pdf",type:"application/pdf"},
                            {name:"customer.png",type:"image/png"},
                            {name:"logo.png",type:"image/png"}];
         externalfiles.forEach(myfile=>{
-            app.get('/'+myfile.name,(req, res) =>
+            app.get('/api/'+myfile.name,(req, res) =>
                 {   //near exe
                     console.log(myfile)
 
@@ -198,7 +207,7 @@ function createServer()
                     return res.send("Fisier lipsa:"+myfile.name)
                 })
         });
-        app.get("/external_download",       (req, res) =>{  try {   const file = decrypt(req.query.hash);
+        app.get("/api/external_download",       (req, res) =>{  try {   const file = decrypt(req.query.hash);
             console.log(file)
                                                                     if(fs.existsSync(file))
                                                                         {   res.contentType(path.basename(file));
@@ -213,10 +222,10 @@ function createServer()
                                                                 }
                                                           });
         app.use(express.static(path.join(__dirname,publicfolder)))
-        app.post('/import_manual', (req, res) => api_import_manual(req, res))
-        app.get('/importfile',           (req,res)=> importfile(req,res));
-        app.get('/downloadfile',           (req,res)=> downloadfile(req,res));
-        app.get('/deletefile',           (req,res)=> deletefile(req,res));
+        app.post('/api/import_manual', (req, res) => api_import_manual(req, res))
+        app.get('/api/importfile',           (req,res)=> importfile(req,res));
+        app.get('/api/downloadfile',           (req,res)=> downloadfile(req,res));
+        app.get('/api/deletefile',           (req,res)=> deletefile(req,res));
 
         ["/orders", "/orders_personalized", "/users", "/admin", "admin_import", "/admin_deleted", "/audit", "/audit_logs", "/help", "/help_versions", "/help_manual"]
             .forEach((page) => {
@@ -224,79 +233,79 @@ function createServer()
             })
 
         //=================AUTH
-        app.get('/login',           (req,res)=> api_login(req,res,usermapping,settings.tokenlifetimehours));
-        app.get('/logout',          (req,res)=> api_logout(req,res));
+        app.get('/api/login',           (req,res)=> api_login(req,res,usermapping,settings.tokenlifetimehours));
+        app.get('/api/logout',          (req,res)=> api_logout(req,res));
         app.use( (req,res,next) => { if(!req.auth.auth){ res.send({error:"login: Utilizatorul nu este autentificat"});return;} else next()})
 
-        app.get('/changepass',      (req,res)=> api_changepass(req,res));
-        app.get('/changeaccount',   (req,res)=> api_changeaccount(req,res));
+        app.get('/api/changepass',      (req,res)=> api_changepass(req,res));
+        app.get('/api/changeaccount',   (req,res)=> api_changeaccount(req,res));
 
-        app.get('/getuserdata',     (req,res)=> api_getuserdata(req,res));
+        app.get('/api/getuserdata',     (req,res)=> api_getuserdata(req,res));
 
         //=================SERVER STATUS
-        app.get('/getserverstatus',     (req,res)=> res.send({statusbackend:true,statustasks:true,statusdb:(new Date().getTime()-settingslastsync)<10000,error:""}));    
+        app.get('/api/getserverstatus',     (req,res)=> res.send({statusbackend:true,statustasks:true,statusdb:(new Date().getTime()-settingslastsync)<10000,error:""}));    
 
         //=================USERS
-        app.get('/users_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Users Users1 LEFT JOIN Permissions Permissions1 ON Users1.permission_id = Permissions1.id","Users1.id DESC","Users1.id",
+        app.get('/api/users_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Users Users1 LEFT JOIN Permissions Permissions1 ON Users1.permission_id = Permissions1.id","Users1.id DESC","Users1.id",
                                             {'Users1.last_name':"str",'Users1.first_name':"str", "Users1.name":"str", 'Users1.permission_id':"nr",'Users1.username':"str",'Users1.hash':"nr",'Users1.id':"nr", "Permissions1.name" : "str"},
                                             {   sepparator:req.query.useor=='1'?" OR ":" AND ",
                                                 postprocess:(array)=>{  array.forEach((elem)=>{ elem["Users1.full_name"]=`${elem["Users1.last_name"]} ${elem["Users1.first_name"]}`; elem["u1.hash"]="";elem["Users1.hash"]="";elem["Permissions1.name"]=permissionMapping.hasOwnProperty(elem["Users1.permission_id"])?permissionMapping[elem["Users1.permission_id"]].name:'Fara';})},
                                                 additionalwhere:"Users1.deactivated=0"
                                             }));
-        app.get('/users_get_external',   (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Users u1 LEFT JOIN Suppliers s1 ON u1.supplierid=s1.id","u1.id DESC","u1.id",
+        app.get('/api/users_get_external',   (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Users u1 LEFT JOIN Suppliers s1 ON u1.supplierid=s1.id","u1.id DESC","u1.id",
                                             {'u1.last_name':"str",'u1.first_name':"str",'u1.permission_id':"nr",'u1.username':"str",'u1.hash':"nr",'u1.id':"nr","u1.supplierid":"nr","s1.name":"str"},
                                             {   sepparator:req.query.useor=='1'?" OR ":" AND ",
                                                 postprocess:(array)=>{  array.forEach((elem)=>{elem["u1.hash"]="";elem["hash"]="";elem["permissionname"]=permissionMapping.hasOwnProperty(elem["u1.permission_id"])?permissionMapping[elem["u1.permission_id"]].name:'Fara';})},
                                                 additionalwhere:"u1.deactivated=0 AND u1.supplierid>-1"
                                             }));
-        app.get('/users_get_deactivated',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Users Users1 LEFT JOIN Permissions Permissions1 ON Users1.permission_id = Permissions1.id","Users1.id DESC","Users1.id",
+        app.get('/api/users_get_deactivated',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Users Users1 LEFT JOIN Permissions Permissions1 ON Users1.permission_id = Permissions1.id","Users1.id DESC","Users1.id",
                                             {'Users1.last_name':"str",'Users1.first_name':"str", "Users1.name":"str", 'Users1.permission_id':"nr",'Users1.username':"str",'Users1.hash':"nr",'Users1.id':"nr", "Permissions1.name" : "str"},
                                             {   sepparator:req.query.useor=='1'?" OR ":" AND ",
                                                 postprocess:(array)=>{  array.forEach((elem)=>{ elem["Users1.full_name"]=`${elem["Users1.last_name"]} ${elem["Users1.first_name"]}`; elem["u1.hash"]="";elem["Users1.hash"]="";elem["Permissions1.name"]=permissionMapping.hasOwnProperty(elem["Users1.permission_id"])?permissionMapping[elem["Users1.permission_id"]].name:'Fara';})},
                                                 additionalwhere:"Users1.deactivated=1"
                                             }));
-        app.get('/users_edit',           (req,res)=>  api_users_edit(req,res));//upd _updated
-        app.get('/users_deactivate',     (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Users',
+        app.get('/api/users_edit',           (req,res)=>  api_users_edit(req,res));//upd _updated
+        app.get('/api/users_deactivate',     (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Users',
                                                 {additionalquery:"UPDATE Settings SET data=" + (new Date().getTime()) + " WHERE name='syncusersstamp';"}));
-        app.get('/users_add',            (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Users', {
+        app.get('/api/users_add',            (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Users', {
             preprocess:(user)=>{user["Users1.name"] = user["Users1.last_name"] + " " + user["Users1.first_name"];},
             additionalquery:"UPDATE Settings SET data=" + (new Date().getTime()) + " WHERE name='syncusersstamp';"
         }));
-        app.get('/users_reactivate',     (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Users',{additionalquery:"UPDATE Settings SET data=" + (new Date().getTime()) + " WHERE name='syncusersstamp';"}));
-        app.get('/users_remove',     (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Users',usermapping));
+        app.get('/api/users_reactivate',     (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Users',{additionalquery:"UPDATE Settings SET data=" + (new Date().getTime()) + " WHERE name='syncusersstamp';"}));
+        app.get('/api/users_remove',     (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Users',usermapping));
         //==============SETTINGS
-        app.get('/settings_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Settings","printname","id",
+        app.get('/api/settings_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Settings","printname","id",
                                             {'id':"int",'name':"str",'data':"str",'min':"nr",'max':"nr",'printname':"str"}));
-        app.get('/settings_edit',            (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Settings',"id"));
+        app.get('/api/settings_edit',            (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Settings',"id"));
         //==============PERMISSIONS
-        app.get('/permissions_get',        (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,'Permissions Permissions1',"id","id",
+        app.get('/api/permissions_get',        (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,'Permissions Permissions1',"id","id",
                                                 {"Permissions1.id":"nr","Permissions1.name":"str","Permissions1.p_dashboard":"nr","Permissions1.p_clients":"nr","Permissions1.p_users":"nr","Permissions1.p_orders":"nr","Permissions1.p_advanced_orders":"nr","Permissions1.p_reports":"nr",
                                                  'Permissions1.p_admin':'nr','Permissions1.p_permissions':'nr','Permissions1.p_audit':'nr'},
                                                 {additionalwhere:"deactivated=0"}));
-        app.get('/permissions_add',        (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Permissions'));
-        app.get('/permissions_edit',       (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Permissions',"id"));
-        app.get('/permissions_remove',     (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Permissions', {checkFKQuery: "SELECT COUNT(*) as count FROM Users WHERE permission_id = {$id};"}));
-        app.get('/permissions_deactivate',     (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Permissions'));
-        app.get('/permissions_reactivate',     (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Permissions'));
+        app.get('/api/permissions_add',        (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Permissions'));
+        app.get('/api/permissions_edit',       (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Permissions',"id"));
+        app.get('/api/permissions_remove',     (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Permissions', {checkFKQuery: "SELECT COUNT(*) as count FROM Users WHERE permission_id = {$id};"}));
+        app.get('/api/permissions_deactivate',     (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Permissions'));
+        app.get('/api/permissions_reactivate',     (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Permissions'));
         //==============AUDIT
-        app.get('/audit_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
+        app.get('/api/audit_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
                                                 "Audit Audit1 LEFT JOIN Users Users1 ON Audit1.userid=Users1.id ","Audit1.stamp DESC","Audit1.id",
                                                 {"Audit1.id":"nr","Audit1.val":"str","Users1.first_name":"str","Users1.last_name":"str","Users1.id":"nr","Audit1.stamp":"date","Audit1.elemtype":"nr","Audit1.elemid":"nr"}));
-        app.get('/log_file_get',                     (req,res)=> api_log_file_get(req,res));
-        app.get('/errors_get',                       (req,res)=> {  if(fs.existsSync(process.cwd()+'/logs/errors.log'))res.send({data:  Buffer.from(fs.readFileSync(process.cwd()+'/logs/errors.log')).toString(), error: ""});
+        app.get('/api/log_file_get',                     (req,res)=> api_log_file_get(req,res));
+        app.get('/api/errors_get',                       (req,res)=> {  if(fs.existsSync(process.cwd()+'/logs/errors.log'))res.send({data:  Buffer.from(fs.readFileSync(process.cwd()+'/logs/errors.log')).toString(), error: ""});
                                                 else res.send({data: [], error: "Nu exista erori."});});
-        app.get('/warnings_get',                       (req,res)=> {  if(fs.existsSync(process.cwd()+'/logs/warnings.log'))res.send({data:  Buffer.from(fs.readFileSync(process.cwd()+'/logs/warnings.log')).toString(), error: ""});
+        app.get('/api/warnings_get',                       (req,res)=> {  if(fs.existsSync(process.cwd()+'/logs/warnings.log'))res.send({data:  Buffer.from(fs.readFileSync(process.cwd()+'/logs/warnings.log')).toString(), error: ""});
                                                 else res.send({data: [], error: "Nu exista avertizari."});});
         //===============================/\BUILT IN======\/CUSTOM
         
         //=================ADVANCED ORDERS
-        app.get('/advanced_orders_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Orders Orders1 LEFT JOIN Users Users1 ON Orders1.idUser = Users1.id LEFT JOIN Clients Clients1 ON Orders1.idClient = Clients1.id","Orders1.id DESC","Orders1.id",
+        app.get('/api/advanced_orders_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Orders Orders1 LEFT JOIN Users Users1 ON Orders1.idUser = Users1.id LEFT JOIN Clients Clients1 ON Orders1.idClient = Clients1.id","Orders1.id DESC","Orders1.id",
         {'Orders1.id':"nr",'Orders1.idClient':"nr", "Orders1.detailsClient":"str",'Orders1.status':"nr","Orders1.details":"str",'Orders1.registrationStamp':"date",'Orders1.startStamp':"date", "Orders1.endStamp": "date", 'Orders1.idUser':"nr", "Users1.name" : "str", "Clients1.name": "str"},
         {   sepparator:req.query.useor=='1'?" OR ":" AND ",
             postprocess:(array)=>{array.forEach((elem)=>{ elem["Orders1.statusList"] = getOrderStatusListById(elem["Orders1.status"]); elem["Orders1.status"] = { id: elem["Orders1.status"], "text": findOrderStatusById(elem["Orders1.status"]).text }; elem["Users1.name"] = (usermapping.id.hasOwnProperty(elem["Orders1.idUser"])) ? `${usermapping.id[elem["Orders1.idUser"]].last_name} ${usermapping.id[elem["Orders1.idUser"]].first_name}` : "Nimeni" })},
         }));
         
-        app.get('/advanced_orders_edit',           (req,res)=>  server_api_crud.api_crud_edit(req,res, newDBPool, "Orders", "id", {
+        app.get('/api/advanced_orders_edit',           (req,res)=>  server_api_crud.api_crud_edit(req,res, newDBPool, "Orders", "id", {
             getAdditionalQuery: (query) => {
                 if (query.field === "status" && query.value == OrderStatus.IN_PROGRESS.id) {
                     return `UPDATE Orders SET startStamp=${Date.now()} WHERE id = ${query.id};`
@@ -307,32 +316,32 @@ function createServer()
                 return ""
             }
         }));//upd _updated
-        app.get('/advanced_orders_add',            (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Orders', {additionalquery:"UPDATE Settings SET data=" + (new Date().getTime()) + " WHERE name='syncusersstamp';"}));
+        app.get('/api/advanced_orders_add',            (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Orders', {additionalquery:"UPDATE Settings SET data=" + (new Date().getTime()) + " WHERE name='syncusersstamp';"}));
         
 
         //==============ORDERS
-        app.get('/orders_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Orders Orders1 LEFT JOIN Clients Clients1 ON Orders1.idClient = Clients1.id","Orders1.id DESC","Orders1.id",
+        app.get('/api/orders_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Orders Orders1 LEFT JOIN Clients Clients1 ON Orders1.idClient = Clients1.id","Orders1.id DESC","Orders1.id",
         {'Orders1.id':"nr",'Orders1.idClient':"nr", "Orders1.detailsClient":"str", 'Orders1.status':"nr","Orders1.details":"str",'Orders1.registrationStamp':"date",'Orders1.startStamp':"date", "Orders1.endStamp": "date", 'Orders1.idUser':"nr", "Clients1.name": "str"},
         {   sepparator:req.query.useor=='1'?" OR ":" AND ",
             postprocess:(array)=>{array.forEach((elem)=>{elem["Orders1.status"] = { id: elem["Orders1.status"], "text": findOrderStatusById(elem["Orders1.status"]).text }; elem["Users1.name"] = (usermapping.id.hasOwnProperty(elem["Orders1.idUser"])) ? `${usermapping.id[elem["Orders1.idUser"]].last_name} ${usermapping.id[elem["Orders1.idUser"]].first_name}` : "Nimeni" })},
             additionalwhere:`Orders1.status!=${OrderStatus.DONE.id} AND Orders1.idUser=${req.auth.userref.id}`
         }));
 
-        app.get('/waiting_orders_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Orders Orders1 LEFT JOIN Clients Clients1 ON Orders1.idClient = Clients1.id","Orders1.id DESC","Orders1.id",
+        app.get('/api/waiting_orders_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Orders Orders1 LEFT JOIN Clients Clients1 ON Orders1.idClient = Clients1.id","Orders1.id DESC","Orders1.id",
         {'Orders1.id':"nr",'Orders1.idClient':"nr", "Orders1.detailsClient":"str",'Orders1.status':"nr","Orders1.details":"str",'Orders1.registrationStamp':"date",'Orders1.startStamp':"date", "Orders1.endStamp": "date", 'Orders1.idUser':"nr", "Clients1.name": "str"},
         {   sepparator:req.query.useor=='1'?" OR ":" AND ",
             postprocess:(array)=>{array.forEach((elem)=>{elem["Orders1.status"] = { id: elem["Orders1.status"], "text": findOrderStatusById(elem["Orders1.status"]).text }; elem["Users1.name"] = (usermapping.id.hasOwnProperty(elem["Orders1.idUser"])) ? `${usermapping.id[elem["Orders1.idUser"]].last_name} ${usermapping.id[elem["Orders1.idUser"]].first_name}` : "Nimeni" })},
             additionalwhere:`Orders1.status=${OrderStatus.UNASSIGNED.id} AND Orders1.idUser=-1`
         }));
 
-        app.get('/finished_orders_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Orders Orders1 LEFT JOIN Clients Clients1 ON Orders1.idClient = Clients1.id","Orders1.id DESC","Orders1.id",
+        app.get('/api/finished_orders_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Orders Orders1 LEFT JOIN Clients Clients1 ON Orders1.idClient = Clients1.id","Orders1.id DESC","Orders1.id",
         {'Orders1.id':"nr",'Orders1.idClient':"nr", "Orders1.detailsClient":"str", 'Orders1.status':"nr","Orders1.details":"str",'Orders1.registrationStamp':"date",'Orders1.startStamp':"date", "Orders1.endStamp": "date", 'Orders1.idUser':"nr", "Clients1.name": "str"},
         {   sepparator:req.query.useor=='1'?" OR ":" AND ",
             postprocess:(array)=>{array.forEach((elem)=>{elem["Orders1.status"] = { id: elem["Orders1.status"], "text": findOrderStatusById(elem["Orders1.status"]).text }; elem["Users1.name"] = (usermapping.id.hasOwnProperty(elem["Orders1.idUser"])) ? `${usermapping.id[elem["Orders1.idUser"]].last_name} ${usermapping.id[elem["Orders1.idUser"]].first_name}` : "Nimeni" })},
             additionalwhere:`Orders1.status=${OrderStatus.DONE.id} AND Orders1.idUser=${req.auth.userref.id}` 
         }));
         
-        app.get('/orders_edit',           (req,res)=>  server_api_crud.api_crud_edit(req,res, newDBPool, "Orders", "id",  {
+        app.get('/api/orders_edit',           (req,res)=>  server_api_crud.api_crud_edit(req,res, newDBPool, "Orders", "id",  {
             getAdditionalQuery: (query) => {
                 if (query.field === "status" && query.value == OrderStatus.DONE.id) {
                     return `UPDATE Orders SET endStamp=${Date.now()} WHERE id = ${query.id};`
@@ -340,70 +349,70 @@ function createServer()
                 return ""
             }
         }));//upd _updated
-        app.get('/orders_add',            (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Orders', {additionalquery:"UPDATE Settings SET data=" + (new Date().getTime()) + " WHERE name='syncusersstamp';"}));
+        app.get('/api/orders_add',            (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Orders', {additionalquery:"UPDATE Settings SET data=" + (new Date().getTime()) + " WHERE name='syncusersstamp';"}));
             
         //==============ORDER FILES
-        app.get('/order_files_get',            (req,res)=> getOrderFiles(req, res));
+        app.get('/api/order_files_get',            (req,res)=> getOrderFiles(req, res));
         app.get("/order_files_download",       (req, res) => downloadOrderFile(req, res));
         app.post('/order_files_add',            (req,res)=> insertOrderFile(req, res))
 
 
         //=================CLIENTS
-        app.get('/clients_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Clients Clients1","Clients1.id DESC","Clients1.id",
+        app.get('/api/clients_get',            (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,"Clients Clients1","Clients1.id DESC","Clients1.id",
             {'Clients1.id':"nr",'Clients1.name':"str"},
             { sepparator:req.query.useor=='1'?" OR ":" AND " })
         );
         
-        app.get('/clients_edit',           (req,res)=>  server_api_crud.api_crud_edit(req,res, newDBPool, "Clients", "id"));//upd _updated
-        app.get('/clients_add',      (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Clients'));
-        app.get('/clients_remove',   (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Clients'));
+        app.get('/api/clients_edit',           (req,res)=>  server_api_crud.api_crud_edit(req,res, newDBPool, "Clients", "id"));//upd _updated
+        app.get('/api/clients_add',      (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Clients'));
+        app.get('/api/clients_remove',   (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Clients'));
 
 
         //==============TRANSPORTS
-        app.get('/transports_get',      (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
+        app.get('/api/transports_get',      (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
                 "Transports t1 LEFT JOIN Woodtype w1 ON t1.woodtypeid=w1.id LEFT JOIN Vehicles v1 ON t1.vehicleid=v1.id LEFT JOIN Suppliers s1 ON t1.supplierid=s1.id",
                 "t1.id ASC","t1.id",{"t1.id":"nr","t1.supplierid":"nr","t1.status":"nr","t1.startstamp":"date","t1.endstamp":"date","t1.plannedstartstamp":"date","t1.plannedendstamp":"date","s1.name":"str","v1.name":"str","w1.name":"str"},
                 {postprocess:(list)=>{list.forEach((elem)=>{elem["t1.statusname"]=getstatusname(elem["t1.status"]);});}, additionalwhere:req.filtersupplier>-1?"t1.supplierid="+req.filtersupplier:undefined}));
-        app.get('/transports_add',      (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Transports',{preprocess:(item)=>{item.status=1;}}));
-        app.get('/transports_edit',     (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Transports',"id"));
-        app.get('/transports_remove',   (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Transports'));
+        app.get('/api/transports_add',      (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Transports',{preprocess:(item)=>{item.status=1;}}));
+        app.get('/api/transports_edit',     (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Transports',"id"));
+        app.get('/api/transports_remove',   (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Transports'));
 
         //==============SUPPLIERS
-        app.get('/suppliers_get',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
+        app.get('/api/suppliers_get',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
             "Suppliers s1 ","s1.id ASC","s1.id",{"s1.id":"nr","s1.name":"str","s1.contact":"str","s1.address":"str"},{additionalwhere:"s1.deactivated=0"}));
-        app.get('/suppliers_get_deactivated',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
+        app.get('/api/suppliers_get_deactivated',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
             "Suppliers s1 ","s1.id ASC","s1.id",{"s1.id":"nr","s1.name":"str","s1.contact":"str","s1.address":"str"},{additionalwhere:"s1.deactivated=1"}));
-        app.get('/suppliers_add',     (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Suppliers'));
-        app.get('/suppliers_edit',    (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Suppliers',"id"));
-        app.get('/suppliers_deactivate',  (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Suppliers'));
-        app.get('/suppliers_reactivate',  (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Suppliers'));
-        app.get('/suppliers_remove',  (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Suppliers',{checkFKQuery: "SELECT COUNT(*) as count FROM Transports WHERE supplierid = {$id};"}));
+        app.get('/api/suppliers_add',     (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Suppliers'));
+        app.get('/api/suppliers_edit',    (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Suppliers',"id"));
+        app.get('/api/suppliers_deactivate',  (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Suppliers'));
+        app.get('/api/suppliers_reactivate',  (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Suppliers'));
+        app.get('/api/suppliers_remove',  (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Suppliers',{checkFKQuery: "SELECT COUNT(*) as count FROM Transports WHERE supplierid = {$id};"}));
 
         //==============WOOD TYPES
-        app.get('/woodtype_get',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
+        app.get('/api/woodtype_get',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
             "Woodtype w1 ","w1.id ASC","w1.id",{"w1.id":"nr","w1.name":"str"},{additionalwhere:"w1.deactivated=0"}));
-        app.get('/woodtype_get_deactivated',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
+        app.get('/api/woodtype_get_deactivated',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
             "Woodtype w1 ","w1.id ASC","w1.id",{"w1.id":"nr","w1.name":"str"},{additionalwhere:"w1.deactivated=1"}));
-        app.get('/woodtype_add',     (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Woodtype'));
-        app.get('/woodtype_edit',    (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Woodtype',"id"));
-        app.get('/woodtype_deactivate',  (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Woodtype'));
-        app.get('/woodtype_reactivate',  (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Woodtype'));
-        app.get('/woodtype_remove',  (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Woodtype',{checkFKQuery: "SELECT COUNT(*) as count FROM Transports WHERE woodtypeid = {$id};"}));
+        app.get('/api/woodtype_add',     (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Woodtype'));
+        app.get('/api/woodtype_edit',    (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Woodtype',"id"));
+        app.get('/api/woodtype_deactivate',  (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Woodtype'));
+        app.get('/api/woodtype_reactivate',  (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Woodtype'));
+        app.get('/api/woodtype_remove',  (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Woodtype',{checkFKQuery: "SELECT COUNT(*) as count FROM Transports WHERE woodtypeid = {$id};"}));
 
         //==============VEHICLES
-        app.get('/vehicles_get',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
+        app.get('/api/vehicles_get',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
             "vehicles v1 ","v1.id ASC","v1.id",{"v1.id":"nr","v1.name":"str","v1.platenumber":"str","v1.currenttransportid":"nr"},{additionalwhere:"v1.deactivated=0"}));
-        app.get('/vehicles_get_deactivated',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
+        app.get('/api/vehicles_get_deactivated',     (req,res)=> server_api_crud.api_crud_get(req,res,newDBPool,
                 "vehicles v1 ","v1.id ASC","v1.id",{"v1.id":"nr","v1.name":"str","v1.platenumber":"str","v1.currenttransportid":"nr"},{additionalwhere:"v1.deactivated=1"}));
-        app.get('/vehicles_add',     (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Vehicles'));
-        app.get('/vehicles_edit',    (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Vehicles',"id"));
-        app.get('/vehicles_deactivate',  (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Vehicles'));
-        app.get('/vehicles_reactivate',  (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Vehicles'));
-        app.get('/vehicles_remove',  (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Vehicles',{checkFKQuery: "SELECT COUNT(*) as count FROM Transports WHERE vehicleid = {$id};"}));
+        app.get('/api/vehicles_add',     (req,res)=> server_api_crud.api_crud_add(req,res,newDBPool,'Vehicles'));
+        app.get('/api/vehicles_edit',    (req,res)=> server_api_crud.api_crud_edit(req,res,newDBPool,'Vehicles',"id"));
+        app.get('/api/vehicles_deactivate',  (req,res)=> server_api_crud.api_crud_deactivate(req,res,newDBPool,'Vehicles'));
+        app.get('/api/vehicles_reactivate',  (req,res)=> server_api_crud.api_crud_reactivate(req,res,newDBPool,'Vehicles'));
+        app.get('/api/vehicles_remove',  (req,res)=> server_api_crud.api_crud_remove(req,res,newDBPool,'Vehicles',{checkFKQuery: "SELECT COUNT(*) as count FROM Transports WHERE vehicleid = {$id};"}));
         
         
         //============REPORTS
-        app.get('/reports_get', download_report);
+        app.get('/api/reports_get', download_report);
         
         //============DEFAULT
         app.all('/*.*',(req, res) =>{             res.send("<br><br><h1>"+(req.url.endsWith(".html")?"Pagina":"Resursa")+" cautata nu exista!</h1><br>"+req.url);})

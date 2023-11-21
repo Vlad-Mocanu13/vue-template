@@ -1,22 +1,26 @@
 <template>
 	<!-- <div :class="menuClasses"> -->
-	<div class="leftmenu">
+	<div :class="[collapsed ? 'menu menucollapsed' : 'menu']">
 		<div style="height: 60px; width: 100%">
 			<img src="@/assets/customer.png" style="width: 205px; padding: 10px 0 10px 0" alt="" />
-			<SyncAltIcon
+			<fa
+				icon="arrow-right-arrow-left"
 				style="
+					color: white;
 					position: relative;
 					float: right;
 					margin-right: 20px;
 					margin-top: 10px;
 					cursor: pointer;
-					font-size: 35px;
+					font-size: 25px;
 				"
 				class="syncalt"
+				v-on:click="Collapse"
 			/>
+            <menu-drawer />
 		</div>
-		<!-- <div v-if="!collapsed" style="font-family: Arial, Helvetica, sans-serif; height: 70px; position: absolute; width: 100%; bottom: 40px; text-align: center;"> -->
 		<div
+			v-if="!collapsed"
 			style="
 				font-family: Arial, Helvetica, sans-serif;
 				height: 70px;
@@ -26,41 +30,57 @@
 				text-align: center;
 			"
 		>
-			<img src="@/assets/logo.png" style="max-width: 90%; height: 60px; padding: 0" alt="" />
-			<br />
-			<span style="color: white; font-weight: 400">Adresa noua:</span><br /><a
-				href="https://pontaj.ad.cnab.ro"
-				>https://pontaj.ad.cnab.ro</a
+			<div
+				style="
+					font-family: Arial, Helvetica, sans-serif;
+					height: 70px;
+					position: absolute;
+					width: 100%;
+					bottom: 40px;
+					text-align: center;
+				"
 			>
+				<img
+					src="@/assets/logo.png"
+					style="max-width: 90%; height: 60px; padding: 0"
+					alt=""
+				/>
+				<br />
+				<span style="color: white; font-weight: 400">Adresa noua:</span><br /><a
+					href="https://pontaj.ad.cnab.ro"
+					>https://pontaj.ad.cnab.ro</a
+				>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import MenuDrawer from "./MenuDrawer.vue";
 
 export default defineComponent({
-	name: "LeftMenu",
-	// props: {
-	//   collapsed: Boolean,
-	//   Collapse: Function,
-	// },
-	// computed: {
-	//   menuClasses() {
-	//     return {
-	//       leftmenu: true,
-	//       leftmenucollapsed: this.collapsed,
-	//     };
-	//   },
-	// },
+	name: "Menu",
 	components: {
-		SyncAltIcon,
+		MenuDrawer,
 	},
+	props: {
+		collapsed: Boolean,
+		Collapse: Function,
+	},
+	computed: {
+		menuClasses() {
+			return {
+				menu: true,
+				menucollapsed: this.collapsed,
+			};
+		},
+	},
+	methods: {},
 });
 </script>
 <style scoped>
-.leftmenu {
+.menu {
 	margin: 0px;
 	border-radius: 0px 4px 4px 0px;
 	padding: 0px;
@@ -82,7 +102,7 @@ export default defineComponent({
 	user-select: none;
 	z-index: 10;
 }
-.leftmenucollapsed {
+.menucollapsed {
 	margin-left: -200px;
 	border-radius: 0px 40px 40px 0px;
 	transition: 0.2s;

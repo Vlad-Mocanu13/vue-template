@@ -1,13 +1,4 @@
 <template>
-	<div class="menuClasses">
-		<div class="menu-header">
-			<span @click="collapsed = !collapsed" class="burger-icon material-icons">sync_alt</span>
-		</div>
-
-		<div v-if="!collapsed" class="logo-container">
-		</div>
-	</div>
-
 	<div class="contentClasses">
 		<br />
 		<br />
@@ -59,10 +50,10 @@ export default defineComponent({
 		};
 	},
 	mounted() {
-		window.addEventListener("resize", () => {
-			if (this.debounce) clearTimeout(this.debounce);
-			this.debounce = setTimeout(() => this.checkIsMobile(), 200);
-		});
+		// window.addEventListener("resize", () => {
+		// 	if (this.debounce) clearTimeout(this.debounce);
+		// 	this.debounce = setTimeout(() => this.checkIsMobile(), 200);
+		// });
 
 		document.addEventListener("keypress", event => {
 			if (event.code === "Enter" || event.code === "NumpadEnter") {
@@ -74,11 +65,12 @@ export default defineComponent({
 		async login() {
 			try {
 				const response = await axios.get(
-					`https://localhost:443/login?username=${this.user}&password=${this.pass}`
+					`https://localhost/api/login?username=${this.user}&password=${this.pass}`
+					// `${window.location.origin}/api/login?username=${this.user}&password=${this.pass}`
 				);
 
 				if (response.data.success) {
-					this.$router.push("/NoPage");
+					this.$router.push("/login");
 					window.location.reload();
 				} else {
                     console.error(response.data.error);

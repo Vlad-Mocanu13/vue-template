@@ -1,12 +1,19 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-import vuetify from './plugins/vuetify'
-import { loadFonts } from './plugins/webfontloader'
+import { createApp } from "vue";
 
-loadFonts()
+import Vue from "vue";
+import App from "./App.vue";
+import router from "./router/router";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { fas } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { loadFonts } from "./plugins/webfontloader";
 
-const app = createApp(App)
-  .use(router)
-  .use(vuetify)
-  .mount('#app')
+library.add(fas);
+
+loadFonts();
+
+createApp(App)
+	.component("fa", FontAwesomeIcon)
+	.use(router)
+	//   .use(store)
+	.mount("#app");
