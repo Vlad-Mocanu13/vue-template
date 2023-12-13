@@ -20,10 +20,10 @@
 	</router-link>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from "vue";
 export default defineComponent({
-	name: "MenuButton",
+	name: "MenuPages",
 	props: {
 		page: {
 			type: Object,
@@ -54,13 +54,13 @@ export default defineComponent({
 }
 .menubutton:hover {
 	color: rgb(255, 255, 255);
-	background: #696969 radial-gradient(circle, transparent 0%, #3d3d3d 1%) center/15000%;
+	background: #696969 radial-gradient(circle, transparent 0%, #3d3d3d);
 }
 .menubutton:active {
 	background-size: 100%;
 	transition: background 0s;
 }
 .menubuttonselected {
-	background-color: rgb(236, 154, 0);
+	background-color: #3498db;
 }
 </style>

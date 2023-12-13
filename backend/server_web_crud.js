@@ -3,18 +3,27 @@ const {monthnames,gethash,setAudit,buildtoken,getAuth,log,logerr,isparamvalidstr
 
 async function api_crud_get(req,res,dbPool,from,orderby,countcolumn,columns,options)
     {   let q = req.query;
+        if(typeof options!='object')options={};
         if(!isparamvalidint(q.start)) q.start=0;
         if(!isparamvalidint(q.count)) q.count=10;
         if(!isparamvalidstring(q.orderby))q.orderby = orderby;
 
-        if(typeof options!='object')options={};
+        
+
+        if(typeof options.replacefilter==='function')
+            q.filter=options.replacefilter(q.filter)
+
         let wherepieces = buildwhere(q.filter,typeof options.sepparator=='string'?options.sepparator:" AND ",columns);
         if(typeof options.additionalwhere=='string' && options.additionalwhere.length>0)wherepieces.push(options.additionalwhere)
+        let distinct = ""
+        if (options.distinct) {
+            distinct = "DISTINCT"
+        }
         let columnarray=[]
         Object.keys(columns).forEach(key => columnarray.push(key+" AS '"+key+"'"));
         let where = wherepieces.length>0?" WHERE "+wherepieces.join(" AND "):"";
         let pagination = " OFFSET "+q.start+" ROWS FETCH NEXT "+q.count+" ROWS ONLY ";
-        let sql = "SELECT "+(columnarray.join(','))+" FROM "+from+" "+where+" ORDER BY "+q.orderby+pagination+";SELECT COUNT("+countcolumn+") as [count] FROM "+from+" "+where+";";
+        let sql = `SELECT ${distinct} `+(columnarray.join(','))+" FROM "+from+" "+where+" ORDER BY "+q.orderby+pagination+";SELECT COUNT("+countcolumn+") as [count] FROM "+from+" "+where+";";
         try {
             let result = await dbPool.query(sql)
             if(typeof options.postprocess=='function'){options.postprocess(result.recordsets[0]);}

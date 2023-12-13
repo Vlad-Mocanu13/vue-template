@@ -6,9 +6,9 @@ const { log, logerr, logwarn, createDBPool, threadMonitor } = require('./server_
 // CONFIG INIT
 const config = JSON.parse(fs.readFileSync('config.json'));
 if (typeof (config.threadCountTLS) !== "number")
-    config.threadCountTLS = 3;
+    config.threadCountTLS = 1;
 if (typeof (config.threadCountWEB) !== "number")
-    config.threadCountWEB = 5;
+    config.threadCountWEB = 2;
 
 
 const THREADTYPE = {

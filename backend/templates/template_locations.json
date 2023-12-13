@@ -1,0 +1,59 @@
+{
+  "sets": [
+    {	"x": 3,"y": 3,"ly": 26,"style": { "font": { "bold": true, "size": 10, "name": "Arial" } },
+		"lines": [	"RAPORT COMENZI {reportname}"]
+    },
+    {	"x": 4,"y": 4,"style": { "font": { "size": 10, "name": "Arial" } },
+		"lines": [	"pe luna {month} {year}"]
+    },
+    {	"x": 6,"y": 2,"height": 50,"horizontal": true,"width": 4,
+		"style": {"border": {"left": { "style": "thin" },"right": { "style": "thin" },"top": { "style": "thin" },"bottom": { "style": "thin" }},
+				  "alignment": {"textRotation": 90,"horizontal": "center","vertical": "center"},"font": { "size": 8, "name": "Arial" }},
+		"lines": [	"Nr. Crt.",
+					"Nume",
+					"Total",
+					"Planificate",
+					"In progres",
+					"Finalizate",
+					"Intarziate",
+					"Livrate",
+					"Facturate",
+					"Platite"
+				 ]
+    },
+	{	"x": 6,"y": 12,"height": 50,"horizontal": true,"width": 10,
+		"style": {"border": {"left": { "style": "thin" },"right": { "style": "thin" },"top": { "style": "thin" },"bottom": { "style": "thin" }},
+				  "alignment": {"textRotation": 0,"horizontal": "center","vertical": "center"},"font": { "size": 8, "name": "Arial" }},
+		"lines": [	"Pret Total"
+				 ]
+    },
+	{	"x": 6,"y": 3,"height": 50,"width": 20,
+		"style": {"border": {"left": { "style": "thin" },"right": { "style": "thin" },"top": { "style": "thin" },"bottom": { "style": "thin" }},
+				  "alignment": {"textRotation": 0,"horizontal": "center","vertical": "center"},"font": { "size": 9, "name": "Arial" }},
+		"lines": [	"Nume"
+				 ]
+    },
+    {	"x": 7,"y": 2,"horizontal": true,"isemploee": true,
+		"styleweekend": {"fill": {"bgColor": "#ff6347","fgColor": "#ff6347","type": "pattern","patternType": "solid"}},
+		"style": {"border": {"left": { "style": "thin" },"right": { "style": "thin" },"top": { "style": "thin" },"bottom": { "style": "thin" }},
+				  "alignment": { "horizontal": "center", "vertical": "center" },"font": { "size": 9, "name": "Arial" }},
+		"lines": [	"index",
+					"name",
+					"total",
+					"planned",
+					"inprogress",
+					"finished",
+					"overdue",
+					"delivered",
+					"billed",
+					"payed",
+					"price"
+				 ]
+    },
+	{	"x": 10,"y": 3,"belowtable":true,
+		"lines": [	"Liniile cu rosu au comenzi cu termenul depasit.",
+					"Generat la {gendate}"
+				 ]
+    }
+  ]
+}

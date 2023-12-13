@@ -417,7 +417,8 @@ function getcurrenttime()
         return printdate;
     }
 function formattime(stamp)
-    {   const d = new Date(stamp);
+    {   if(typeof stamp=='undefined')stamp=Date.now();
+        const d = new Date(stamp);
         return d.getFullYear()+"-"+(("0"+(d.getMonth()+1)).slice(-2))+"-"+(("0"+d.getDate()).slice(-2))+" "+
                 (("0"+d.getHours()).slice(-2))+":"+(("0"+d.getMinutes()).slice(-2))+":"+(("0"+d.getSeconds()).slice(-2));
     }
@@ -562,7 +563,7 @@ async function processimportuserscsv(csvcontent, settings, usermapping, subGroup
 
 //==========================FILTERING
 function filterData(result, field, name) {
-        let tableValues = ['stamp', 'datestart', 'dateend', 'generatedat', 'data', 'refdate']
+        let tableValues = ['stamp', 'datestart', 'dateend', 'generatedat', 'data', 'refdate',"receivedStamp","deadlineStamp"]
             let fieldArray = field.split(',')
             const nameArray = name.split(',')
             let replaceKeys = (obj) => {
@@ -636,10 +637,22 @@ function benchmarksql()
           id: 3,
           text: "Finalizata"
         },
+        SHIPPED: {
+            id: 4,
+            text: "Livrata"
+        },
+        INVOICED: {
+            id: 5,
+            text: "Facturata"
+        },
+        PAID: {
+            id: 6,
+            text: "Incasata"
+        },
     }
     
     const findOrderStatusById = (id) => {
-        const orderStatuses = [OrderStatus.CANCELED, OrderStatus.UNASSIGNED, OrderStatus.IN_PROGRESS, OrderStatus.DONE]
+        const orderStatuses = [OrderStatus.CANCELED, OrderStatus.UNASSIGNED, OrderStatus.IN_PROGRESS, OrderStatus.DONE, OrderStatus.SHIPPED, OrderStatus.INVOICED, OrderStatus.PAID]
       
         const orderStatus = orderStatuses.find(item => item.id === id)
         if (typeof orderStatus === "undefined") {
@@ -649,31 +662,24 @@ function benchmarksql()
         }
     }
 
-    const getOrderStatusListById = (id) => {
-        let orderStatusList = []
-        switch (id) {
-            case OrderStatus.CANCELED.id:
-                orderStatusList = [OrderStatus.UNASSIGNED]
-                break
-            case OrderStatus.UNASSIGNED.id:
-                orderStatusList = [OrderStatus.IN_PROGRESS]
-                break
-            case OrderStatus.IN_PROGRESS.id:
-                orderStatusList = [OrderStatus.DONE, OrderStatus.CANCELED]
-                break
-            case OrderStatus.DONE.id:
-                orderStatusList = []
-                break
-        }
-
-        return orderStatusList
+    const getOrderStatusListById = () => {
+        return [OrderStatus.CANCELED, OrderStatus.UNASSIGNED, OrderStatus.IN_PROGRESS, OrderStatus.DONE, OrderStatus.SHIPPED, OrderStatus.INVOICED, OrderStatus.PAID]
     }
+
+    const _statusNameList=["Anulata", "In asteptare", "In progres", "Finalizata", "Livrata", "Facturata", "Incasata"];
+
+    function getStatusByMatch(string)
+        {   for(let i=0;i<_statusNameList.length;i++)
+                if(_statusNameList[i].toLowerCase().includes(string))return i;
+            return -1;
+        }
 
 
 
 exports.OrderStatus = OrderStatus
 exports.getOrderStatusListById = getOrderStatusListById
 exports.findOrderStatusById = findOrderStatusById
+exports.getStatusByMatch=getStatusByMatch;
 exports.log = log;
 exports.logwarn = logwarn;
 exports.logerr = logerr;

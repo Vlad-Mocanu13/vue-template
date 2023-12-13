@@ -1,0 +1,46 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////    \/  PUSE SI IN PROD,  modificari noi mai sus
+
+////======27-11-2023======
+//ALTER TABLE OrderTracker.dbo.Orders ADD orderType nvarchar(60) DEFAULT '' NOT NULL;
+//ALTER TABLE OrderTracker.dbo.Orders ADD orderedBy nvarchar(60) DEFAULT '' NOT NULL;
+//ALTER TABLE OrderTracker.dbo.Orders ADD observations nvarchar(150) DEFAULT '' NOT NULL;
+//ALTER TABLE OrderTracker.dbo.Orders ADD presentAtWorkshop tinyint DEFAULT 0 NOT NULL;
+//ALTER TABLE OrderTracker.dbo.Orders ADD deliveredAmount nvarchar(40) DEFAULT '' NOT NULL;
+
+
+
+////======26-10-2023======
+////
+////CREATE TABLE OrderTracker.dbo.Locations (
+////	id int IDENTITY(0,1) NOT NULL,
+////	name varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS DEFAULT '' NOT NULL,
+////	CONSTRAINT Locations_PK PRIMARY KEY (id)
+////);
+////
+////ALTER TABLE OrderTracker.dbo.Permissions ADD p_locations tinyint DEFAULT 0 NOT NULL;
+////ALTER TABLE OrderTracker.dbo.Orders ADD idLocation int DEFAULT -1 NOT NULL;
+////ALTER TABLE OrderTracker.dbo.Users ADD idLocation int DEFAULT -1 NOT NULL;
+////
+////ALTER TABLE OrderTracker.dbo.Orders ADD price int DEFAULT 0 NOT NULL;
+////
+////ALTER TABLE OrderTracker.dbo.Orders ADD receivedStamp bigint DEFAULT 0 NOT NULL;
+////ALTER TABLE OrderTracker.dbo.Orders ADD deadlineStamp bigint DEFAULT 0 NOT NULL;
+////
+////======================

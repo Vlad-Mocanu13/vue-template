@@ -3,8 +3,10 @@
 		<br />
 		<br />
 		<br />
+		<div class="error-message">
+			<span>{{ error }}</span>
+		</div>
 		<div class="form-container">
-			<span class="error-message">{{ error }}</span>
 			<label class="input-label" for="inputLarge"></label>
 			<input
 				v-model="user"
@@ -27,66 +29,80 @@
 		<br />
 		<br />
 		<br />
-		<button @click="login" type="button" class="button-authenticate">Autentificare</button>
+		<button @click="loginHandler" type="button" class="button-authenticate">
+			Autentificare
+		</button>
 		<br />
 		<br />
 	</div>
 </template>
-<script lang="ts">
-import { defineComponent } from "vue";
+<script>
+import { ref, onMounted } from "vue";
 import axios from "axios";
-
-export default defineComponent({
+import store from "../store/store";
+import router from "../router/router";
+export default {
 	name: "Login",
-	data() {
+	setup() {
+		const collapsed = ref(false);
+		const user = ref("");
+		const pass = ref("");
+		const error = ref("");
+		const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+		const smallWindow = ref(false);
+		let debounce = null;
+
+		const loginHandler = () => {
+			axios.get(encodeURI(`https://localhost/api/login?username=${user.value}&password=${pass.value}`), {withCredentials: true})
+                .then(response => {
+					if (response.data.success) {
+						// Assuming you have 'navigate' method available (you may need to adapt this)
+						store.dispatch("auth/login");
+						router.push("/home");
+                        window.location.reload()
+					} else {
+						console.error(response.data.error);
+						error.value = response.data.error;
+					}
+				})
+				.catch(error => {
+					console.error(error);
+					error.value = error.message;
+				});
+		};
+
+		const checkIsMobile = () => {
+			if (smallWindow.value !== window.innerWidth < 900) {
+				collapsed.value = isMobile || window.innerWidth < 900;
+			}
+			smallWindow.value = window.innerWidth < 900;
+		};
+
+		onMounted(() => {
+			window.addEventListener("resize", () => {
+				if (debounce) clearTimeout(debounce);
+				debounce = setTimeout(checkIsMobile, 200);
+			});
+
+			document.addEventListener("keypress", event => {
+				if (event.code === "Enter" || event.code === "NumpadEnter") {
+					loginHandler();
+				}
+			});
+		});
+
 		return {
-			collapsed: false,
-			user: "",
-			pass: "",
-			error: "",
-			ismobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-			smallWindow: false,
-			debounce: null,
+			collapsed,
+			user,
+			pass,
+			error,
+			isMobile,
+			smallWindow,
+			loginHandler,
+			checkIsMobile,
 		};
 	},
-	mounted() {
-		// window.addEventListener("resize", () => {
-		// 	if (this.debounce) clearTimeout(this.debounce);
-		// 	this.debounce = setTimeout(() => this.checkIsMobile(), 200);
-		// });
-
-		document.addEventListener("keypress", event => {
-			if (event.code === "Enter" || event.code === "NumpadEnter") {
-				this.login();
-			}
-		});
-	},
-	methods: {
-		async login() {
-			try {
-				const response = await axios.get(
-					`https://localhost/api/login?username=${this.user}&password=${this.pass}`
-					// `${window.location.origin}/api/login?username=${this.user}&password=${this.pass}`
-				);
-
-				if (response.data.success) {
-					this.$router.push("/login");
-					window.location.reload();
-				} else {
-                    console.error(response.data.error);
-				}
-			} catch (error) {
-				console.error(error);
-			}
-		},
-		checkIsMobile() {
-			if (this.smallWindow !== window.innerWidth < 900) {
-				this.collapsed = this.ismobile || window.innerWidth < 900;
-			}
-			this.smallWindow = window.innerWidth < 900;
-		},
-	},
-});
+};
 </script>
 <style scoped>
 .menu {
@@ -140,11 +156,8 @@ export default defineComponent({
 }
 
 .error-message {
+	text-align: center;
 	color: red;
-}
-
-.input-label {
-	/* Adjust as needed */
 }
 
 .input {

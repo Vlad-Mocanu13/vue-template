@@ -2,18 +2,24 @@
 	<div>
 		<Menu :collapsed="data.collapsed" :Collapse="toggleCollapsed" />
 		<div :class="[data.collapsed ? 'content contentextended' : 'content']">
-			<router-view v-if="data.isLoggedIn" />
+            <template v-if="isLoggedIn">
+				<router-view />
+			</template>
+			<template v-else>
+				<Login />
+			</template>
 		</div>
 	</div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from "vue";
-import Menu from "@/components/Menu.vue";
-import Login from "@/Pages/Login.vue";
-import NoPage from "@/Pages/NoPage.vue";
 
-export default defineComponent({
+<script>
+import { ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
+import store from './store/store'
+import Menu from "./components/Menu.vue";
+import Login from "./Pages/Login.vue";
+import NoPage from "./Pages/NoPage.vue";
+export default {
 	name: "App",
 	components: {
 		Menu,
@@ -21,11 +27,13 @@ export default defineComponent({
 		NoPage,
 	},
 	setup() {
+
+        const isLoggedIn = computed(() => store.state.auth.isLoggedIn);
+
 		const data = ref({
 			collapsed: false,
 			smallWindow: false,
 			debounce: null,
-			isLoggedIn: false,
 			isMobile: false,
 		});
 
@@ -58,28 +66,19 @@ export default defineComponent({
 			window.removeEventListener("resize", handleResize);
 		});
 
-		watch(
-			() => data.value.isLoggedIn,
-			newValue => {
-				if (newValue) {
-					// Perform actions when the user is logged in
-				} else {
-					// Perform actions when the user is not logged in
-				}
-			}
-		);
-
 		// Check login status on component mount
 		onMounted(() => {
+            console.log(getCookie("jwt"))
 			if (getCookie("jwt")) {
-				data.value.isLoggedIn = true;
+				store.dispatch("auth/login")
 			} else {
-				data.value.isLoggedIn = false;
+                store.dispatch("auth/logout")
+
 			}
 		});
 
-		function getCookie(cname) {
-			let name = cname + "=";
+		function getCookie(cookieName) {
+			let name = cookieName + "=";
 			let decodedCookie = decodeURIComponent(document.cookie);
 			let ca = decodedCookie.split(";");
 
@@ -99,9 +98,10 @@ export default defineComponent({
 			data,
 			toggleCollapsed,
 			getCookie,
+            isLoggedIn
 		};
 	},
-});
+};
 </script>
 
 <style scoped>

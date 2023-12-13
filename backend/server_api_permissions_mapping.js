@@ -1,26 +1,31 @@
 "use strict"; 
 let apiPermissions = new Map()
 
-  .set("/advanced_orders_get"   ,["p_advanced_orders"])
-  .set("/advanced_orders_add"   ,["p_advanced_orders"])
-  .set("/advanced_orders_edit"   ,["p_advanced_orders"])
+  	.set("/advanced_orders_get"   ,["p_advanced_orders"])
+  	.set("/advanced_orders_add"   ,["p_advanced_orders"])
+  	.set("/advanced_orders_edit"   ,["p_advanced_orders"])
 
-  .set("/orders_get"   ,["p_orders"])
-  .set("/orders_edit"   ,["p_orders"])
+  	.set("/orders_get"   ,["p_orders"])
+  	.set("/orders_edit"   ,["p_orders"])
 
-  .set("/waiting_orders_get"   ,["p_orders"])
+  	.set("/waiting_orders_get"   ,["p_orders"])
 
-  .set("/finished_orders_get"   ,["p_orders"])
+  	.set("/finished_orders_get"   ,["p_orders"])
 
-  .set("/order_files_get"   ,["p_orders"])
-  .set("/order_files_download"   ,["p_orders"])
-  .set("/order_files_add"   ,["p_orders"])
-  .set("/order_files_delete"   ,["p_orders"])
+  	.set("/order_files_get"   ,["p_orders"])
+  	.set("/order_files_download"   ,["p_orders"])
+  	.set("/order_files_add"   ,["p_orders"])
+  	.set("/order_files_delete"   ,["p_orders"])
 
-  .set("/clients_get"   ,["p_clients"])
-  .set("/clients_add"   ,["p_clients"])
-  .set("/clients_edit"   ,["p_clients"])
-  .set("/clients_remove"  ,["p_clients"])
+  	.set("/clients_get"   ,["p_clients"])
+  	.set("/clients_add"   ,["p_clients"])
+  	.set("/clients_edit"   ,["p_clients"])
+  	.set("/clients_remove"  ,["p_clients"])
+
+	.set("/locations_get"   ,["p_locations"])
+	.set("/locations_add"   ,["p_locations"])
+	.set("/locations_edit"   ,["p_locations"])
+	.set("/locations_remove"  ,["p_locations"])
 
   .set("/transports_get"   ,["p_transports"])
   .set('/transports_get_deactivated'   ,["p_admin"])

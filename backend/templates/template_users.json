@@ -6,7 +6,7 @@
     {	"x": 4,"y": 4,"style": { "font": { "size": 10, "name": "Arial" } },
 		"lines": [	"pe luna {month} {year}"]
     },
-    {	"x": 6,"y": 2,"height": 50,"horizontal": true,"width": 2.7,
+    {	"x": 6,"y": 2,"height": 50,"horizontal": true,"width": 4,
 		"style": {"border": {"left": { "style": "thin" },"right": { "style": "thin" },"top": { "style": "thin" },"bottom": { "style": "thin" }},
 				  "alignment": {"textRotation": 90,"horizontal": "center","vertical": "center"},"font": { "size": 8, "name": "Arial" }},
 		"lines": [	"Nr. Crt.",
@@ -14,7 +14,17 @@
 					"Total",
 					"Planificate",
 					"In progres",
-					"Finalizate"
+					"Finalizate",
+					"Intarziate",
+					"Livrate",
+					"Facturate",
+					"Platite"
+				 ]
+    },
+	{	"x": 6,"y": 12,"height": 50,"horizontal": true,"width": 10,
+		"style": {"border": {"left": { "style": "thin" },"right": { "style": "thin" },"top": { "style": "thin" },"bottom": { "style": "thin" }},
+				  "alignment": {"textRotation": 0,"horizontal": "center","vertical": "center"},"font": { "size": 8, "name": "Arial" }},
+		"lines": [	"Pret Total"
 				 ]
     },
 	{	"x": 6,"y": 3,"height": 50,"width": 20,
@@ -32,7 +42,17 @@
 					"total",
 					"planned",
 					"inprogress",
-					"finished"
+					"finished",
+					"overdue",
+					"delivered",
+					"billed",
+					"payed",
+					"price"
+				 ]
+    },
+	{	"x": 10,"y": 3,"belowtable":true,
+		"lines": [	"Liniile cu rosu au comenzi cu termenul depasit.",
+					"Generat la {gendate}"
 				 ]
     }
   ]

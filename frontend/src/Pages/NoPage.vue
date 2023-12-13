@@ -6,9 +6,8 @@
 	</div>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from "vue";
-import Menu from "@/components/Menu.vue";
 
 export default defineComponent({
 	name: "NoPage",
