@@ -10,8 +10,8 @@
 import { defineComponent, ref, onMounted } from "vue";
 import MenuPages from "./MenuPages.vue";
 import MenuOptions from "./MenuOptions.vue";
-import store from "../store/store";
-import router from "../router/router";
+import store from "../../store/store";
+import router from "../../router/router";
 import axios from "axios";
 
 export default defineComponent({

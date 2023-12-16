@@ -1,5 +1,9 @@
 <template>
 	<div class="no-page">
+        <EditCloseButton />
+        <EditDoneButton />
+        <EditStartButton />
+        <EditText />
 		<h1>404 - Page Not Found</h1>
 		<p>The page you are looking for does not exist.</p>
 		<router-link to="/">Go back to the Home Page</router-link>
@@ -7,11 +11,19 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
-
-export default defineComponent({
+import EditCloseButton from "../components/Edit/EditUtils/EditCloseButton.vue";
+import EditDoneButton from "../components/Edit/EditUtils/EditDoneButton.vue";
+import EditStartButton from "../components/Edit/EditUtils/EditStartButton.vue";
+import EditText from "../components/Edit/EditUtils/EditText.vue";
+export default {
 	name: "NoPage",
-});
+    components: {
+        EditCloseButton,
+        EditDoneButton,
+        EditStartButton,
+        EditText
+    }
+};
 </script>
 
 <style scoped>

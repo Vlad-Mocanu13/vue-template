@@ -16,7 +16,7 @@
 <script>
 import { ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import store from './store/store'
-import Menu from "./components/Menu.vue";
+import Menu from "./components/Menu/Menu.vue";
 import Login from "./Pages/Login.vue";
 import NoPage from "./Pages/NoPage.vue";
 export default {
